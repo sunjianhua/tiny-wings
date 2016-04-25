@@ -30,6 +30,18 @@ var HelloWorldLayer = cc.Layer.extend({
     _toKeyPointI: 0,
     kHillSegmentWidth: 10,
     M_PI: 3.14159265358979323846,
+
+    prevFromKeyPointI: -1,
+    prevToKeyPointI:  -1,
+
+    kMaxHillVertices: 4000,
+    kMaxBorderVertices: 800,
+
+    _nHillVertices: 0,
+    _hillVertices: new Array(),
+    _hillTexCoords: new Array(),
+    _nBorderVertices: 0,
+    _borderVertices: new Array(),
     //
     ctor: function () {
         this._super();
@@ -84,6 +96,18 @@ var HelloWorldLayer = cc.Layer.extend({
                 this.shader.use();
                 this.shader.setUniformsForBuiltins();
                 cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_COLOR | cc.VERTEX_ATTRIB_FLAG_POSITION);
+
+                // 绘制山丘
+                var texture2d = cc.textureCache.addImage("HelloWorld.png");
+                gl.bindTexture(gl.TEXTURE_2D, texture2d.getName());
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, this._hillVertices);
+                gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 2, gl.FLOAT, false, 0, 0);
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, this._hillTexCoords);
+                gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 4, gl.FLOAT, false, 0, 0);
+
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, this._nHillVertices)
 
                 // Draw fullscreen Square
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexPositionBuffer);
@@ -164,15 +188,66 @@ var HelloWorldLayer = cc.Layer.extend({
     resetHillVertices: function () {
         var winSize = cc.director.getWinSize();
 
-        var prevFromKeyPointI = -1;
-        var prevToKeyPointI = -1;
-
         // key points interval for drawing
         while (this._hillKeyPoints[this._fromKeyPointI + 1].x < this._offsetX - winSize.width / 8 / this.getScale()) {
             this._fromKeyPointI++;
         }
         while (this._hillKeyPoints[this._toKeyPointI].x < this._offsetX + winSize.width * 9 / 8 / this.getScale()) {
             this._toKeyPointI++;
+        }
+
+        //
+        if (this.prevFromKeyPointI != this._fromKeyPointI || this.prevToKeyPointI != this._toKeyPointI)
+        {
+            // vertices for visible area
+            this._nHillVertices = 0;
+            this._nBorderVertices = 0;
+            var p0 = cc.p();
+            var p1 = cc.p();
+            var pt0 = cc.p();
+            var pt1 = cc.p();
+            p0.x = this._hillKeyPoints[this._fromKeyPointI].x;
+            p0.y = this._hillKeyPoints[this._fromKeyPointI].y;
+            for (var i = this._fromKeyPointI + 1; i < this._toKeyPointI + 1; ++i)
+            {
+                p1.x = this._hillKeyPoints[i].x;
+                p1.y = this._hillKeyPoints[i].y;
+
+                // triangle strip between p0 and p1
+                var hSegments = Math.floor((p1.x - p0.x) / this.kHillSegmentWidth);
+                var dx = (p1.x - p0.x) / hSegments;
+                var da = Math.PI / hSegments;
+                var ymid = (p0.y + p1.y) / 2;
+                var ampl = (p0.y - p1.y) / 2;
+                pt0.x = p0.x;
+                pt0.y = p0.y;
+                this._borderVertices[this._nBorderVertices++] = pt0;
+                for (var j = 1; j < hSegments + 1; ++j)
+                {
+                    pt1.x = p0.x + j * dx;
+                    pt1.y = ymid + ampl * Math.cos(da * j);
+                    this._borderVertices[this._nBorderVertices++] = pt1;
+
+                    this._hillVertices[this._nHillVertices] = cc.p(pt0.x, 0);
+                    this._hillTexCoords[this._nHillVertices++] = cc.p(pt0.x / 512, 1.0);
+                    this._hillVertices[this._nHillVertices] = cc.p(pt1.x, 0);
+                    this._hillTexCoords[this._nHillVertices++] = cc.p(pt1.x / 512, 1.0);
+
+                    this._hillVertices[this._nHillVertices] = cc.p(pt0.x, pt0.y);
+                    this._hillTexCoords[this._nHillVertices++] = cc.p(pt0.x / 512, 0);
+                    this._hillVertices[this._nHillVertices] = cc.p(pt1.x, pt1.y);
+                    this._hillTexCoords[this._nHillVertices++] = cc.p(pt1.x / 512, 0);
+
+                    pt0.x = pt1.x;
+                    pt0.y = pt1.y;
+                }
+
+                p0.x = p1.x;
+                p0.y = p1.y;
+            }
+
+            this.prevFromKeyPointI = this._fromKeyPointI;
+            this.prevToKeyPointI = this._toKeyPointI;
         }
     },
 
@@ -237,7 +312,7 @@ var HelloWorldScene = cc.Scene.extend({
     offset: 0,
     ctor: function () {
         this._super();
-        this.setScale(0.6);
+        //this.setScale(0.6);
         this.scheduleUpdate();
     },
     update: function (dt) {
