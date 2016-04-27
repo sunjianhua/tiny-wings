@@ -38,8 +38,10 @@ var HelloWorldLayer = cc.Layer.extend({
     kMaxBorderVertices: 800,
 
     _nHillVertices: 0,
-    _hillVertices: new Array(),
-    _hillTexCoords: new Array(),
+    _hillVertices: new Float32Array(),
+    _hillTexCoords: new Float32Array(),
+    _hillVerticesGL: gl.createBuffer(),
+    _hillTexCoordsGL: gl.createBuffer(),
     _nBorderVertices: 0,
     _borderVertices: new Array(),
     //
@@ -98,14 +100,14 @@ var HelloWorldLayer = cc.Layer.extend({
                 cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_COLOR | cc.VERTEX_ATTRIB_FLAG_POSITION);
 
                 // 绘制山丘
-                var texture2d = cc.textureCache.addImage("HelloWorld.png");
+                var texture2d = cc.textureCache.addImage("res/HelloWorld.png");
                 gl.bindTexture(gl.TEXTURE_2D, texture2d.getName());
 
-                gl.bindBuffer(gl.ARRAY_BUFFER, this._hillVertices);
+                gl.bindBuffer(gl.ARRAY_BUFFER, this._hillVerticesGL);
                 gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 2, gl.FLOAT, false, 0, 0);
 
-                gl.bindBuffer(gl.ARRAY_BUFFER, this._hillTexCoords);
-                gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 4, gl.FLOAT, false, 0, 0);
+                gl.bindBuffer(gl.ARRAY_BUFFER, this._hillTexCoordsGL);
+                gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 2, gl.FLOAT, false, 0, 0);
 
                 gl.drawArrays(gl.TRIANGLE_STRIP, 0, this._nHillVertices)
 
@@ -246,6 +248,14 @@ var HelloWorldLayer = cc.Layer.extend({
                 p0.y = p1.y;
             }
 
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._hillVerticesGL);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._hillVertices), gl.STATIC_DRAW);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._hillTexCoordsGL);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._hillTexCoords), gl.STATIC_DRAW);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
             this.prevFromKeyPointI = this._fromKeyPointI;
             this.prevToKeyPointI = this._toKeyPointI;
         }
@@ -303,6 +313,7 @@ var HelloWorldLayer = cc.Layer.extend({
             0.0, 0.0, 1.0, 1.0
         ];
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
 });
