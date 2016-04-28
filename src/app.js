@@ -44,9 +44,15 @@ var HelloWorldLayer = cc.Layer.extend({
     _hillTexCoordsGL: gl.createBuffer(),
     _nBorderVertices: 0,
     _borderVertices: new Array(),
+    _texture2d: null,
     //
     ctor: function () {
         this._super();
+
+        //
+        this._texture2d = cc.textureCache.addImage("res/test.png");
+        var sprite = cc.Sprite.create(this._texture2d);
+        this.addChild(sprite, 12)
 
         // 线段
         this.generateHills();
@@ -100,8 +106,8 @@ var HelloWorldLayer = cc.Layer.extend({
                 cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_COLOR | cc.VERTEX_ATTRIB_FLAG_POSITION);
 
                 // 绘制山丘
-                var texture2d = cc.textureCache.addImage("res/HelloWorld.png");
-                gl.bindTexture(gl.TEXTURE_2D, texture2d.getName());
+                cc.glBindTexture2D(this._texture2d);
+                // gl.bindTexture(gl.TEXTURE_2D, this._texture2d);
 
                 gl.bindBuffer(gl.ARRAY_BUFFER, this._hillVerticesGL);
                 gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 2, gl.FLOAT, false, 0, 0);
@@ -324,7 +330,7 @@ var HelloWorldScene = cc.Scene.extend({
     ctor: function () {
         this._super();
         //this.setScale(0.6);
-        this.scheduleUpdate();
+        //this.scheduleUpdate();
     },
     update: function (dt) {
         var PIXELS_PER_SECOND = 100;
