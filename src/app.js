@@ -103,7 +103,7 @@ var HelloWorldLayer = cc.Layer.extend({
             glnode.draw = function () {
                 this.shader.use();
                 this.shader.setUniformsForBuiltins();
-                cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_COLOR | cc.VERTEX_ATTRIB_FLAG_POSITION);
+                cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POSITION | cc.VERTEX_ATTRIB_FLAG_TEX_COORDS);
 
                 // 绘制山丘
                 cc.glBindTexture2D(this._texture2d);
@@ -116,6 +116,10 @@ var HelloWorldLayer = cc.Layer.extend({
                 gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 2, gl.FLOAT, false, 0, 0);
 
                 gl.drawArrays(gl.TRIANGLE_STRIP, 0, this._nHillVertices)
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+                cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_COLOR | cc.VERTEX_ATTRIB_FLAG_POSITION);
 
                 // Draw fullscreen Square
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexPositionBuffer);
