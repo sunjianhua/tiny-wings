@@ -52,6 +52,8 @@ var HelloWorldLayer = cc.Layer.extend({
         //
         this._texture2d = cc.textureCache.addImage("res/test.png");
         var sprite = cc.Sprite.create(this._texture2d);
+        sprite.setAnchorPoint(0, 0);
+        sprite.setScale(0.5)
         this.addChild(sprite, 12)
 
         // 线段
@@ -130,19 +132,22 @@ var HelloWorldLayer = cc.Layer.extend({
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexColorBuffer);
                 gl.vertexAttribPointer(cc.VERTEX_ATTRIB_COLOR, 4, gl.FLOAT, false, 0, 0);
 
-                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-                // Draw fullscreen Triangle
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexPositionBuffer);
-                gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 2, gl.FLOAT, false, 0, 0);
-
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexColorBuffer);
-                gl.vertexAttribPointer(cc.VERTEX_ATTRIB_COLOR, 4, gl.FLOAT, false, 0, 0);
-
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexTexBuffer);
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexTexBuffer);
                 gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 2, gl.FLOAT, false, 0, 0);
 
-                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+                //// Draw fullscreen Triangle
+                //gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexPositionBuffer);
+                //gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 2, gl.FLOAT, false, 0, 0);
+                //
+                //gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexColorBuffer);
+                //gl.vertexAttribPointer(cc.VERTEX_ATTRIB_COLOR, 4, gl.FLOAT, false, 0, 0);
+                //
+                //gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexTexBuffer);
+                //gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 2, gl.FLOAT, false, 0, 0);
+                //
+                //gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
 
                 gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
@@ -321,22 +326,36 @@ var HelloWorldLayer = cc.Layer.extend({
         var squareVertexPositionBuffer = this.squareVertexPositionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
         vertices = [
-            winSize.width, winSize.height,
             0, winSize.height,
+            0, 0,
+            winSize.width, winSize.height,
             winSize.width, 0,
-            0, 0
+            //winSize.width, winSize.height,
+            //0, winSize.height,
+            //winSize.width, 0,
+            //0, 0
         ];
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
         var squareVertexColorBuffer = this.squareVertexColorBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexColorBuffer);
         colors = [
-            0.0, 0.0, 1.0, 1.0,
-            0.0, 0.0, 1.0, 1.0,
-            0.0, 0.0, 1.0, 1.0,
-            0.0, 0.0, 1.0, 1.0
+            1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0
         ];
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+
+        var squareVertexTexBuffer = this.squareVertexTexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexTexBuffer);
+        textures = [
+            0, 0,
+            0, 1,
+            1, 0,
+            1, 1
+        ];
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textures), gl.STATIC_DRAW);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
