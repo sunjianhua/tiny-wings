@@ -97,29 +97,31 @@ var HelloWorldLayer = cc.Layer.extend({
             this.addChild(glnode, 10);
             this.glnode = glnode;
 
-            this.shader = cc.shaderCache.getProgram("ShaderPositionColor");
+            this.shader = cc.shaderCache.getProgram("ShaderPositionTextureColor");
             this.initBuffers();
 
             glnode.draw = function () {
                 this.shader.use();
                 this.shader.setUniformsForBuiltins();
-                cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POSITION | cc.VERTEX_ATTRIB_FLAG_TEX_COORDS);
+                //cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POSITION | cc.VERTEX_ATTRIB_FLAG_TEX_COORDS);
 
-                // 绘制山丘
+                //// 绘制山丘
+                //cc.glBindTexture2D(this._texture2d);
+                //// gl.bindTexture(gl.TEXTURE_2D, this._texture2d);
+                //
+                //gl.bindBuffer(gl.ARRAY_BUFFER, this._hillVerticesGL);
+                //gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 2, gl.FLOAT, false, 0, 0);
+                //
+                //gl.bindBuffer(gl.ARRAY_BUFFER, this._hillTexCoordsGL);
+                //gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 2, gl.FLOAT, false, 0, 0);
+                //
+                //gl.drawArrays(gl.TRIANGLE_STRIP, 0, this._nHillVertices)
+                //
+                //gl.bindBuffer(gl.ARRAY_BUFFER, null);
+                //
+                cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POS_COLOR_TEX);
+
                 cc.glBindTexture2D(this._texture2d);
-                // gl.bindTexture(gl.TEXTURE_2D, this._texture2d);
-
-                gl.bindBuffer(gl.ARRAY_BUFFER, this._hillVerticesGL);
-                gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 2, gl.FLOAT, false, 0, 0);
-
-                gl.bindBuffer(gl.ARRAY_BUFFER, this._hillTexCoordsGL);
-                gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 2, gl.FLOAT, false, 0, 0);
-
-                gl.drawArrays(gl.TRIANGLE_STRIP, 0, this._nHillVertices)
-
-                gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-                cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_COLOR | cc.VERTEX_ATTRIB_FLAG_POSITION);
 
                 // Draw fullscreen Square
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexPositionBuffer);
@@ -136,6 +138,9 @@ var HelloWorldLayer = cc.Layer.extend({
 
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexColorBuffer);
                 gl.vertexAttribPointer(cc.VERTEX_ATTRIB_COLOR, 4, gl.FLOAT, false, 0, 0);
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexTexBuffer);
+                gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 2, gl.FLOAT, false, 0, 0);
 
                 gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
 
@@ -300,6 +305,15 @@ var HelloWorldLayer = cc.Layer.extend({
             1.0, 0.0, 0.0, 1.0
         ];
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+
+        var triangleVertexTexBuffer = this.triangleVertexTexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexTexBuffer);
+        var textures = [
+            0.5, 1,
+            0, 0,
+            1, 0
+        ];
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textures), gl.STATIC_DRAW);
 
         //
         // Square
