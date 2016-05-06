@@ -218,67 +218,67 @@ var HelloWorldLayer = cc.Layer.extend({
             this._toKeyPointI++;
         }
 
+        ////
+        //if (this.prevFromKeyPointI != this._fromKeyPointI || this.prevToKeyPointI != this._toKeyPointI)
+        //{
+        //    // vertices for visible area
+        //    this._nHillVertices = 0;
+        //    this._nBorderVertices = 0;
+        //    var p0 = cc.p();
+        //    var p1 = cc.p();
+        //    var pt0 = cc.p();
+        //    var pt1 = cc.p();
+        //    p0.x = this._hillKeyPoints[this._fromKeyPointI].x;
+        //    p0.y = this._hillKeyPoints[this._fromKeyPointI].y;
+        //    for (var i = this._fromKeyPointI + 1; i < this._toKeyPointI + 1; ++i)
+        //    {
+        //        p1.x = this._hillKeyPoints[i].x;
+        //        p1.y = this._hillKeyPoints[i].y;
         //
-        if (this.prevFromKeyPointI != this._fromKeyPointI || this.prevToKeyPointI != this._toKeyPointI)
-        {
-            // vertices for visible area
-            this._nHillVertices = 0;
-            this._nBorderVertices = 0;
-            var p0 = cc.p();
-            var p1 = cc.p();
-            var pt0 = cc.p();
-            var pt1 = cc.p();
-            p0.x = this._hillKeyPoints[this._fromKeyPointI].x;
-            p0.y = this._hillKeyPoints[this._fromKeyPointI].y;
-            for (var i = this._fromKeyPointI + 1; i < this._toKeyPointI + 1; ++i)
-            {
-                p1.x = this._hillKeyPoints[i].x;
-                p1.y = this._hillKeyPoints[i].y;
-
-                // triangle strip between p0 and p1
-                var hSegments = Math.floor((p1.x - p0.x) / this.kHillSegmentWidth);
-                var dx = (p1.x - p0.x) / hSegments;
-                var da = Math.PI / hSegments;
-                var ymid = (p0.y + p1.y) / 2;
-                var ampl = (p0.y - p1.y) / 2;
-                pt0.x = p0.x;
-                pt0.y = p0.y;
-                this._borderVertices[this._nBorderVertices++] = pt0;
-                for (var j = 1; j < hSegments + 1; ++j)
-                {
-                    pt1.x = p0.x + j * dx;
-                    pt1.y = ymid + ampl * Math.cos(da * j);
-                    this._borderVertices[this._nBorderVertices++] = pt1;
-
-                    this._hillVertices[this._nHillVertices] = cc.p(pt0.x, 0);
-                    this._hillTexCoords[this._nHillVertices++] = cc.p(pt0.x / 512, 1.0);
-                    this._hillVertices[this._nHillVertices] = cc.p(pt1.x, 0);
-                    this._hillTexCoords[this._nHillVertices++] = cc.p(pt1.x / 512, 1.0);
-
-                    this._hillVertices[this._nHillVertices] = cc.p(pt0.x, pt0.y);
-                    this._hillTexCoords[this._nHillVertices++] = cc.p(pt0.x / 512, 0);
-                    this._hillVertices[this._nHillVertices] = cc.p(pt1.x, pt1.y);
-                    this._hillTexCoords[this._nHillVertices++] = cc.p(pt1.x / 512, 0);
-
-                    pt0.x = pt1.x;
-                    pt0.y = pt1.y;
-                }
-
-                p0.x = p1.x;
-                p0.y = p1.y;
-            }
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, this._hillVerticesGL);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._hillVertices), gl.STATIC_DRAW);
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, this._hillTexCoordsGL);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._hillTexCoords), gl.STATIC_DRAW);
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-            this.prevFromKeyPointI = this._fromKeyPointI;
-            this.prevToKeyPointI = this._toKeyPointI;
-        }
+        //        // triangle strip between p0 and p1
+        //        var hSegments = Math.floor((p1.x - p0.x) / this.kHillSegmentWidth);
+        //        var dx = (p1.x - p0.x) / hSegments;
+        //        var da = Math.PI / hSegments;
+        //        var ymid = (p0.y + p1.y) / 2;
+        //        var ampl = (p0.y - p1.y) / 2;
+        //        pt0.x = p0.x;
+        //        pt0.y = p0.y;
+        //        this._borderVertices[this._nBorderVertices++] = pt0;
+        //        for (var j = 1; j < hSegments + 1; ++j)
+        //        {
+        //            pt1.x = p0.x + j * dx;
+        //            pt1.y = ymid + ampl * Math.cos(da * j);
+        //            this._borderVertices[this._nBorderVertices++] = pt1;
+        //
+        //            this._hillVertices[this._nHillVertices] = cc.p(pt0.x, 0);
+        //            this._hillTexCoords[this._nHillVertices++] = cc.p(pt0.x / 512, 1.0);
+        //            this._hillVertices[this._nHillVertices] = cc.p(pt1.x, 0);
+        //            this._hillTexCoords[this._nHillVertices++] = cc.p(pt1.x / 512, 1.0);
+        //
+        //            this._hillVertices[this._nHillVertices] = cc.p(pt0.x, pt0.y);
+        //            this._hillTexCoords[this._nHillVertices++] = cc.p(pt0.x / 512, 0);
+        //            this._hillVertices[this._nHillVertices] = cc.p(pt1.x, pt1.y);
+        //            this._hillTexCoords[this._nHillVertices++] = cc.p(pt1.x / 512, 0);
+        //
+        //            pt0.x = pt1.x;
+        //            pt0.y = pt1.y;
+        //        }
+        //
+        //        p0.x = p1.x;
+        //        p0.y = p1.y;
+        //    }
+        //
+        //    gl.bindBuffer(gl.ARRAY_BUFFER, this._hillVerticesGL);
+        //    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._hillVertices), gl.STATIC_DRAW);
+        //
+        //    gl.bindBuffer(gl.ARRAY_BUFFER, this._hillTexCoordsGL);
+        //    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._hillTexCoords), gl.STATIC_DRAW);
+        //
+        //    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        //
+        //    this.prevFromKeyPointI = this._fromKeyPointI;
+        //    this.prevToKeyPointI = this._toKeyPointI;
+        //}
     },
 
     setOffsetX: function (newOffsetX) {
