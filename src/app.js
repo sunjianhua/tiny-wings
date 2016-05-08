@@ -28,7 +28,7 @@ var HelloWorldLayer = cc.Layer.extend({
     _offsetX: 0,
     _fromKeyPointI: 0,
     _toKeyPointI: 0,
-    kHillSegmentWidth: 10,
+    kHillSegmentWidth: 50,
     M_PI: 3.14159265358979323846,
 
     prevFromKeyPointI: -1,
@@ -38,8 +38,8 @@ var HelloWorldLayer = cc.Layer.extend({
     kMaxBorderVertices: 800,
 
     _nHillVertices: 0,
-    _hillVertices: new Float32Array(),
-    _hillTexCoords: new Float32Array(),
+    _hillVertices: new Float32Array(4000),
+    _hillTexCoords: new Float32Array(4000),
     _hillVerticesGL: gl.createBuffer(),
     _hillTexCoordsGL: gl.createBuffer(),
     _nBorderVertices: 0,
@@ -51,10 +51,10 @@ var HelloWorldLayer = cc.Layer.extend({
 
         //
         this._texture2d = cc.textureCache.addImage("res/test.png");
-        var sprite = cc.Sprite.create(this._texture2d);
-        sprite.setAnchorPoint(0, 0);
-        sprite.setScale(0.5)
-        this.addChild(sprite, 12)
+        //var sprite = cc.Sprite.create(this._texture2d);
+        //sprite.setAnchorPoint(0, 0);
+        //sprite.setScale(0.5)
+        //this.addChild(sprite, 12)
 
         // 线段
         this.generateHills();
@@ -67,7 +67,7 @@ var HelloWorldLayer = cc.Layer.extend({
         //drawSegment
         //for (var i = 1; i < this.kMaxHillKeyPoints; ++i) {
         for (var i = Math.max(this._fromKeyPointI, 1); i <= this._toKeyPointI; ++i) {
-            draw.drawSegment(this._hillKeyPoints[i - 1], this._hillKeyPoints[i], 1, cc.color(255, 255, 255, 255));
+            // draw.drawSegment(this._hillKeyPoints[i - 1], this._hillKeyPoints[i], 1, cc.color(255, 255, 255, 255));
             // 绘制曲线
             var p0 = this._hillKeyPoints[i - 1];
             var p1 = this._hillKeyPoints[i];
@@ -99,43 +99,38 @@ var HelloWorldLayer = cc.Layer.extend({
             this.addChild(glnode, 10);
             this.glnode = glnode;
 
-            this.shader = cc.shaderCache.getProgram("ShaderPositionTextureColor");
+            this.shader = cc.shaderCache.getProgram("ShaderPositionTexture");
             this.initBuffers();
 
             glnode.draw = function () {
                 this.shader.use();
                 this.shader.setUniformsForBuiltins();
-                //cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POSITION | cc.VERTEX_ATTRIB_FLAG_TEX_COORDS);
-
-                //// 绘制山丘
-                //cc.glBindTexture2D(this._texture2d);
-                //// gl.bindTexture(gl.TEXTURE_2D, this._texture2d);
-                //
-                //gl.bindBuffer(gl.ARRAY_BUFFER, this._hillVerticesGL);
-                //gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 2, gl.FLOAT, false, 0, 0);
-                //
-                //gl.bindBuffer(gl.ARRAY_BUFFER, this._hillTexCoordsGL);
-                //gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 2, gl.FLOAT, false, 0, 0);
-                //
-                //gl.drawArrays(gl.TRIANGLE_STRIP, 0, this._nHillVertices)
-                //
-                //gl.bindBuffer(gl.ARRAY_BUFFER, null);
-                //
-                cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POS_COLOR_TEX);
+                cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POSITION | cc.VERTEX_ATTRIB_FLAG_TEX_COORDS);
 
                 cc.glBindTexture2D(this._texture2d);
 
-                // Draw fullscreen Square
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexPositionBuffer);
+                // 绘制山丘
+                cc.glBindTexture2D(this._texture2d);
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, this._hillVerticesGL);
                 gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 2, gl.FLOAT, false, 0, 0);
 
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexColorBuffer);
-                gl.vertexAttribPointer(cc.VERTEX_ATTRIB_COLOR, 4, gl.FLOAT, false, 0, 0);
-
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexTexBuffer);
+                gl.bindBuffer(gl.ARRAY_BUFFER, this._hillTexCoordsGL);
                 gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 2, gl.FLOAT, false, 0, 0);
 
-                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, this._nHillVertices / 2);
+
+                //// Draw fullscreen Square
+                //gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexPositionBuffer);
+                //gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 2, gl.FLOAT, false, 0, 0);
+                //
+                ////gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexColorBuffer);
+                ////gl.vertexAttribPointer(cc.VERTEX_ATTRIB_COLOR, 4, gl.FLOAT, false, 0, 0);
+                //
+                //gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexTexBuffer);
+                //gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 2, gl.FLOAT, false, 0, 0);
+                //
+                //gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
                 //// Draw fullscreen Triangle
                 //gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexPositionBuffer);
@@ -149,7 +144,7 @@ var HelloWorldLayer = cc.Layer.extend({
                 //
                 //gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
 
-                gl.bindBuffer(gl.ARRAY_BUFFER, null);
+                //gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
             }.bind(this);
 
@@ -157,19 +152,6 @@ var HelloWorldLayer = cc.Layer.extend({
 
         return true;
     },
-
-    /*
-     generateHills: function () {
-     var winSize = cc.director.getWinSize();
-     var x = 0;
-     var y = winSize.height / 2;
-     for (var i = 0; i < this.kMaxHillKeyPoints; i++) {
-     this._hillKeyPoints[i] = cc.p(x, y);
-     x += winSize.width / 2;
-     y = Math.random() * Math.floor(winSize.height);
-     }
-     },
-     */
 
     generateHills: function () {
         var winSize = cc.director.getWinSize();
@@ -218,67 +200,81 @@ var HelloWorldLayer = cc.Layer.extend({
             this._toKeyPointI++;
         }
 
-        ////
-        //if (this.prevFromKeyPointI != this._fromKeyPointI || this.prevToKeyPointI != this._toKeyPointI)
-        //{
-        //    // vertices for visible area
-        //    this._nHillVertices = 0;
-        //    this._nBorderVertices = 0;
-        //    var p0 = cc.p();
-        //    var p1 = cc.p();
-        //    var pt0 = cc.p();
-        //    var pt1 = cc.p();
-        //    p0.x = this._hillKeyPoints[this._fromKeyPointI].x;
-        //    p0.y = this._hillKeyPoints[this._fromKeyPointI].y;
-        //    for (var i = this._fromKeyPointI + 1; i < this._toKeyPointI + 1; ++i)
-        //    {
-        //        p1.x = this._hillKeyPoints[i].x;
-        //        p1.y = this._hillKeyPoints[i].y;
         //
-        //        // triangle strip between p0 and p1
-        //        var hSegments = Math.floor((p1.x - p0.x) / this.kHillSegmentWidth);
-        //        var dx = (p1.x - p0.x) / hSegments;
-        //        var da = Math.PI / hSegments;
-        //        var ymid = (p0.y + p1.y) / 2;
-        //        var ampl = (p0.y - p1.y) / 2;
-        //        pt0.x = p0.x;
-        //        pt0.y = p0.y;
-        //        this._borderVertices[this._nBorderVertices++] = pt0;
-        //        for (var j = 1; j < hSegments + 1; ++j)
-        //        {
-        //            pt1.x = p0.x + j * dx;
-        //            pt1.y = ymid + ampl * Math.cos(da * j);
-        //            this._borderVertices[this._nBorderVertices++] = pt1;
-        //
-        //            this._hillVertices[this._nHillVertices] = cc.p(pt0.x, 0);
-        //            this._hillTexCoords[this._nHillVertices++] = cc.p(pt0.x / 512, 1.0);
-        //            this._hillVertices[this._nHillVertices] = cc.p(pt1.x, 0);
-        //            this._hillTexCoords[this._nHillVertices++] = cc.p(pt1.x / 512, 1.0);
-        //
-        //            this._hillVertices[this._nHillVertices] = cc.p(pt0.x, pt0.y);
-        //            this._hillTexCoords[this._nHillVertices++] = cc.p(pt0.x / 512, 0);
-        //            this._hillVertices[this._nHillVertices] = cc.p(pt1.x, pt1.y);
-        //            this._hillTexCoords[this._nHillVertices++] = cc.p(pt1.x / 512, 0);
-        //
-        //            pt0.x = pt1.x;
-        //            pt0.y = pt1.y;
-        //        }
-        //
-        //        p0.x = p1.x;
-        //        p0.y = p1.y;
-        //    }
-        //
-        //    gl.bindBuffer(gl.ARRAY_BUFFER, this._hillVerticesGL);
-        //    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._hillVertices), gl.STATIC_DRAW);
-        //
-        //    gl.bindBuffer(gl.ARRAY_BUFFER, this._hillTexCoordsGL);
-        //    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this._hillTexCoords), gl.STATIC_DRAW);
-        //
-        //    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        //
-        //    this.prevFromKeyPointI = this._fromKeyPointI;
-        //    this.prevToKeyPointI = this._toKeyPointI;
-        //}
+        if (this.prevFromKeyPointI != this._fromKeyPointI || this.prevToKeyPointI != this._toKeyPointI)
+        {
+            // vertices for visible area
+            this._nHillVertices = 0;
+            this._nBorderVertices = 0;
+            var p0 = cc.p();
+            var p1 = cc.p();
+            var pt0 = cc.p();
+            var pt1 = cc.p();
+            p0.x = this._hillKeyPoints[this._fromKeyPointI].x;
+            p0.y = this._hillKeyPoints[this._fromKeyPointI].y;
+            for (var i = this._fromKeyPointI + 1; i < this._toKeyPointI + 1; ++i)
+            {
+                p1.x = this._hillKeyPoints[i].x;
+                p1.y = this._hillKeyPoints[i].y;
+
+                // triangle strip between p0 and p1
+                var hSegments = Math.floor((p1.x - p0.x) / this.kHillSegmentWidth);
+                var dx = (p1.x - p0.x) / hSegments;
+                var da = Math.PI / hSegments;
+                var ymid = (p0.y + p1.y) / 2;
+                var ampl = (p0.y - p1.y) / 2;
+                pt0.x = p0.x;
+                pt0.y = p0.y;
+                this._borderVertices[this._nBorderVertices++] = cc.p(pt0.x, pt0.y);
+                for (var j = 1; j < hSegments + 1; ++j)
+                {
+                    pt1.x = p0.x + j * dx;
+                    pt1.y = ymid + ampl * Math.cos(da * j);
+                    this._borderVertices[this._nBorderVertices++] = pt1;
+
+                    this._hillVertices[this._nHillVertices] = pt0.x;
+                    this._hillVertices[this._nHillVertices + 1] = 0;
+                    this._hillTexCoords[this._nHillVertices] = pt0.x / 512;
+                    this._hillTexCoords[this._nHillVertices + 1] = 1.0;
+                    this._nHillVertices += 2;
+
+                    this._hillVertices[this._nHillVertices] = pt1.x;
+                    this._hillVertices[this._nHillVertices + 1] = 0;
+                    this._hillTexCoords[this._nHillVertices] = pt1.x / 512;
+                    this._hillTexCoords[this._nHillVertices + 1] = 1.0;
+                    this._nHillVertices += 2;
+
+                    this._hillVertices[this._nHillVertices] = pt0.x;
+                    this._hillVertices[this._nHillVertices + 1] = pt0.y;
+                    this._hillTexCoords[this._nHillVertices] = pt0.x / 512;
+                    this._hillTexCoords[this._nHillVertices + 1] = 0;
+                    this._nHillVertices += 2;
+
+                    this._hillVertices[this._nHillVertices] = pt1.x;
+                    this._hillVertices[this._nHillVertices + 1] = pt1.y;
+                    this._hillTexCoords[this._nHillVertices] = pt1.x / 512;
+                    this._hillTexCoords[this._nHillVertices + 1] = 0;
+                    this._nHillVertices += 2;
+
+                    pt0.x = pt1.x;
+                    pt0.y = pt1.y;
+                }
+
+                p0.x = p1.x;
+                p0.y = p1.y;
+            }
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._hillVerticesGL);
+            gl.bufferData(gl.ARRAY_BUFFER, this._hillVertices, gl.DYNAMIC_DRAW);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._hillTexCoordsGL);
+            gl.bufferData(gl.ARRAY_BUFFER, this._hillTexCoords, gl.DYNAMIC_DRAW);
+
+            //gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+            this.prevFromKeyPointI = this._fromKeyPointI;
+            this.prevToKeyPointI = this._toKeyPointI;
+        }
     },
 
     setOffsetX: function (newOffsetX) {
@@ -335,7 +331,17 @@ var HelloWorldLayer = cc.Layer.extend({
             //winSize.width, 0,
             //0, 0
         ];
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        var _vertices = new Float32Array(100)
+        _vertices[0] = 0;
+        _vertices[1] = winSize.height;
+        _vertices[2] = 0;
+        _vertices[3] = 0;
+        _vertices[4] = winSize.width;
+        _vertices[5] = winSize.height;
+        _vertices[6] = winSize.width;
+        _vertices[7] = 0;
+
+        gl.bufferData(gl.ARRAY_BUFFER, _vertices, gl.DYNAMIC_DRAW);
 
         var squareVertexColorBuffer = this.squareVertexColorBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexColorBuffer);
