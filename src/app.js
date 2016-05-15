@@ -20,6 +20,9 @@ cc.GLNode = cc.GLNode || cc.Node.extend({
         }
     });
 
+var GRABABLE_MASK_BIT = 1<<31;
+var NOT_GRABABLE_MASK = ~GRABABLE_MASK_BIT;
+
 var HelloWorldLayer = cc.Layer.extend({
     // 对象成员
     sprite: null,
@@ -45,16 +48,76 @@ var HelloWorldLayer = cc.Layer.extend({
     _nBorderVertices: 0,
     _borderVertices: new Array(),
     _texture2d: null,
+
+    _space: null,
+    _debugNode: null,
+
+    //
+    addFloor : function() {
+        var space = this._space;
+        var floor = space.addShape(new cp.SegmentShape(space.staticBody, cp.v(0, 0), cp.v(640, 0), 0));
+        floor.setElasticity(1);
+        floor.setFriction(1);
+        floor.setLayers(NOT_GRABABLE_MASK);
+    },
+
+    addWalls : function() {
+        var space = this._space;
+        var wall1 = space.addShape(new cp.SegmentShape(space.staticBody, cp.v(0, 0), cp.v(0, 480), 0));
+        wall1.setElasticity(1);
+        wall1.setFriction(1);
+        wall1.setLayers(NOT_GRABABLE_MASK);
+
+        var wall2 = space.addShape(new cp.SegmentShape(space.staticBody, cp.v(640, 0), cp.v(640, 480), 0));
+        wall2.setElasticity(1);
+        wall2.setFriction(1);
+        wall2.setLayers(NOT_GRABABLE_MASK);
+    },
+
     //
     ctor: function () {
         this._super();
 
+        // 物理
+        this._space = new cp.Space();
+        this._space.gravity = cp.v(0, -100);
+        this._space.sleepTimeThreshold = 0.5;
+        this._space.collisionSlop = 0.5;
+
+        this._debugNode = new cc.PhysicsDebugNode(this._space);
+        //this._debugNode.visible = false;
+        this.addChild(this._debugNode, 100);
+
+        this.addFloor();
+        this.addWalls();
+
+        var width = 50;
+        var height = 60;
+        var mass = width * height * 1/1000;
+        var rock = this._space.addBody(new cp.Body(mass, cp.momentForBox(mass, width, height)));
+        rock.setPos(cp.v(500, 100));
+        rock.setAngle(1);
+        shape = this._space.addShape(new cp.BoxShape(rock, width, height));
+        shape.setFriction(0.3);
+        shape.setElasticity(0.3);
+
+        for (var i = 1; i <= 10; i++) {
+            var radius = 20;
+            mass = 3;
+            var body = this._space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, cp.v(0, 0))));
+            body.setPos(cp.v(200 + i, (2 * radius + 5) * i));
+            var circle = this._space.addShape(new cp.CircleShape(body, radius, cp.v(0, 0)));
+            circle.setElasticity(0.8);
+            circle.setFriction(1);
+        }
+
+        var ramp = this._space.addShape(new cp.SegmentShape(this._space.staticBody, cp.v(100, 100), cp.v(300, 200), 10));
+        ramp.setElasticity(1);
+        ramp.setFriction(1);
+        ramp.setLayers(NOT_GRABABLE_MASK);
+
         //
         this._texture2d = cc.textureCache.addImage("res/test.png");
-        //var sprite = cc.Sprite.create(this._texture2d);
-        //sprite.setAnchorPoint(0, 0);
-        //sprite.setScale(0.5)
-        //this.addChild(sprite, 12)
 
         // 线段
         this.generateHills();
@@ -63,8 +126,6 @@ var HelloWorldLayer = cc.Layer.extend({
         var draw = new cc.DrawNode();
         this.addChild(draw, 11);
         var winSize = cc.director.getWinSize();
-        //var centerPos = cc.p(winSize.width / 2, winSize.height / 2);
-        //drawSegment
         //for (var i = 1; i < this.kMaxHillKeyPoints; ++i) {
         for (var i = Math.max(this._fromKeyPointI, 1); i <= this._toKeyPointI; ++i) {
             // draw.drawSegment(this._hillKeyPoints[i - 1], this._hillKeyPoints[i], 1, cc.color(255, 255, 255, 255));
@@ -151,6 +212,30 @@ var HelloWorldLayer = cc.Layer.extend({
         }
 
         return true;
+    },
+
+    onEnter : function () {
+        this._super();
+
+        if( 'touches' in cc.sys.capabilities )
+        {
+            cc.eventManager.addListener({
+                event: cc.EventListener.TOUCH_ALL_AT_ONCE,
+                onTouchesEnded: function(touches, event)
+                {
+                    console.log("点了一下。")
+                }}, this);
+        }
+        else if( 'mouse' in cc.sys.capabilities )
+        {
+            cc.eventManager.addListener({
+                event: cc.EventListener.MOUSE,
+                onMouseDown: function (event)
+                {
+                    console.log("点了一下。")
+                }
+            }, this);
+        }
     },
 
     generateHills: function () {
@@ -373,13 +458,14 @@ var HelloWorldScene = cc.Scene.extend({
     ctor: function () {
         this._super();
         //this.setScale(0.6);
-        //this.scheduleUpdate();
+        this.scheduleUpdate();
     },
     update: function (dt) {
         var PIXELS_PER_SECOND = 100;
         this.offset += PIXELS_PER_SECOND * dt;
 
-        this.helloWorldLayerNode.setOffsetX(this.offset)
+        this.helloWorldLayerNode._space.step(dt);
+        //this.helloWorldLayerNode.setOffsetX(this.offset)
     },
     onEnter: function () {
         this._super();
