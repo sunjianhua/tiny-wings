@@ -51,7 +51,7 @@ var HelloWorldLayer = cc.Layer.extend({
 
     _space: null,
     _debugNode: null,
-
+    _hero: null,
     //
     addFloor : function() {
         var space = this._space;
@@ -86,7 +86,7 @@ var HelloWorldLayer = cc.Layer.extend({
 
         this._debugNode = new cc.PhysicsDebugNode(this._space);
         //this._debugNode.visible = false;
-        this.addChild(this._debugNode, 100);
+        this.addChild(this._debugNode, 12);
 
         this.addFloor();
         this.addWalls();
@@ -116,7 +116,11 @@ var HelloWorldLayer = cc.Layer.extend({
         ramp.setFriction(1);
         ramp.setLayers(NOT_GRABABLE_MASK);
 
-        //
+        // 英雄
+        this._hero = new Hero();
+        this.addChild(this._hero, 12);
+
+        // 纹理
         this._texture2d = cc.textureCache.addImage("res/test.png");
 
         // 线段
