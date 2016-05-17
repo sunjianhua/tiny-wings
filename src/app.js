@@ -117,7 +117,7 @@ var HelloWorldLayer = cc.Layer.extend({
         ramp.setLayers(NOT_GRABABLE_MASK);
 
         // 英雄
-        this._hero = new Hero();
+        this._hero = Hero.createWithWorld();
         this.addChild(this._hero, 12);
 
         // 纹理
