@@ -117,7 +117,7 @@ var HelloWorldLayer = cc.Layer.extend({
         ramp.setLayers(NOT_GRABABLE_MASK);
 
         // 英雄
-        this._hero = Hero.createWithWorld();
+        this._hero = Hero.createWithSpace(this._space);
         this.addChild(this._hero, 12);
 
         // 纹理
@@ -469,6 +469,7 @@ var HelloWorldScene = cc.Scene.extend({
         this.offset += PIXELS_PER_SECOND * dt;
 
         this.helloWorldLayerNode._space.step(dt);
+        this.helloWorldLayerNode._hero.update(dt);
         //this.helloWorldLayerNode.setOffsetX(this.offset)
     },
     onEnter: function () {
