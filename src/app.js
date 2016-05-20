@@ -94,22 +94,22 @@ var HelloWorldLayer = cc.Layer.extend({
         var width = 50;
         var height = 60;
         var mass = width * height * 1/1000;
-        var rock = this._space.addBody(new cp.Body(mass, cp.momentForBox(mass, width, height)));
-        rock.setPos(cp.v(500, 100));
-        rock.setAngle(1);
-        shape = this._space.addShape(new cp.BoxShape(rock, width, height));
-        shape.setFriction(0.3);
-        shape.setElasticity(0.3);
+        // var rock = this._space.addBody(new cp.Body(mass, cp.momentForBox(mass, width, height)));
+        // rock.setPos(cp.v(500, 100));
+        // rock.setAngle(1);
+        // shape = this._space.addShape(new cp.BoxShape(rock, width, height));
+        // shape.setFriction(0.3);
+        // shape.setElasticity(0.3);
 
-        for (var i = 1; i <= 10; i++) {
-            var radius = 20;
-            mass = 3;
-            var body = this._space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, cp.v(0, 0))));
-            body.setPos(cp.v(200 + i, (2 * radius + 5) * i));
-            var circle = this._space.addShape(new cp.CircleShape(body, radius, cp.v(0, 0)));
-            circle.setElasticity(0.8);
-            circle.setFriction(1);
-        }
+        // for (var i = 1; i <= 10; i++) {
+        //     var radius = 20;
+        //     mass = 3;
+        //     var body = this._space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, cp.v(0, 0))));
+        //     body.setPos(cp.v(200 + i, (2 * radius + 5) * i));
+        //     var circle = this._space.addShape(new cp.CircleShape(body, radius, cp.v(0, 0)));
+        //     circle.setElasticity(0.8);
+        //     circle.setFriction(1);
+        // }
 
         var ramp = this._space.addShape(new cp.SegmentShape(this._space.staticBody, cp.v(100, 100), cp.v(300, 200), 10));
         ramp.setElasticity(1);

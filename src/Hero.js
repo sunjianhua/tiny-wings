@@ -13,8 +13,10 @@ Hero = cc.Sprite.extend({
             this._body = spaceObj.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, cp.v(0, 0))));
             this._body.setPos(cp.v(200 + 5, (2 * radius + 5) * 5));
             var circle = spaceObj.addShape(new cp.CircleShape(this._body, radius, cp.v(0, 0)));
-            circle.setElasticity(0.8);
-            circle.setFriction(1);
+            //弹性
+            circle.setElasticity(0);
+            //摩擦
+            circle.setFriction(0);
         },
 
         update: function (dt) {
