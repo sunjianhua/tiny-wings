@@ -53,25 +53,28 @@ var HelloWorldLayer = cc.Layer.extend({
     _debugNode: null,
     _hero: null,
     //
-    addFloor : function() {
+    resetTerrain : function() {
         var space = this._space;
-        var floor = space.addShape(new cp.SegmentShape(space.staticBody, cp.v(0, 0), cp.v(640, 0), 0));
-        floor.setElasticity(1);
-        floor.setFriction(1);
-        floor.setLayers(NOT_GRABABLE_MASK);
-    },
+        if(this.terrainBody)
+        {
+            space.removeBody(this.terrainBody)
+        }
 
-    addWalls : function() {
-        var space = this._space;
-        var wall1 = space.addShape(new cp.SegmentShape(space.staticBody, cp.v(0, 0), cp.v(0, 480), 0));
-        wall1.setElasticity(1);
-        wall1.setFriction(1);
-        wall1.setLayers(NOT_GRABABLE_MASK);
+        this.terrainBody = new cp.Body(Infinity, Infinity);
+        this.terrainBody.nodeIdleTime = Infinity;
 
-        var wall2 = space.addShape(new cp.SegmentShape(space.staticBody, cp.v(640, 0), cp.v(640, 480), 0));
-        wall2.setElasticity(1);
-        wall2.setFriction(1);
-        wall2.setLayers(NOT_GRABABLE_MASK);
+        var p1 = cp.v(0, 0);
+        var p2 = cp.v(0, 0);
+        for(var i = 0; i < this._nBorderVertices - 1; i++) {
+            p1.x = this._borderVertices[i].x;
+            p1.y = this._borderVertices[i].y;
+            p2.x = this._borderVertices[i + 1].x;
+            p2.y = this._borderVertices[i + 1].y;
+            var floor = space.addStaticShape(new cp.SegmentShape(this.terrainBody, p1, p2, 0));
+            floor.setElasticity(1);
+            floor.setFriction(1);
+            floor.setLayers(NOT_GRABABLE_MASK);
+        }
     },
 
     //
@@ -87,9 +90,6 @@ var HelloWorldLayer = cc.Layer.extend({
         this._debugNode = new cc.PhysicsDebugNode(this._space);
         //this._debugNode.visible = false;
         this.addChild(this._debugNode, 12);
-
-        this.addFloor();
-        this.addWalls();
 
         var width = 50;
         var height = 60;
@@ -110,11 +110,6 @@ var HelloWorldLayer = cc.Layer.extend({
         //     circle.setElasticity(0.8);
         //     circle.setFriction(1);
         // }
-
-        var ramp = this._space.addShape(new cp.SegmentShape(this._space.staticBody, cp.v(100, 100), cp.v(300, 200), 10));
-        ramp.setElasticity(1);
-        ramp.setFriction(1);
-        ramp.setLayers(NOT_GRABABLE_MASK);
 
         // 英雄
         this._hero = Hero.createWithSpace(this._space);
@@ -232,11 +227,22 @@ var HelloWorldLayer = cc.Layer.extend({
         }
         else if( 'mouse' in cc.sys.capabilities )
         {
+            var selfSpace = this._space
+
             cc.eventManager.addListener({
                 event: cc.EventListener.MOUSE,
                 onMouseDown: function (event)
                 {
-                    console.log("点了一下。")
+                    var width = 50;
+                    var height = 60;
+                    var mass = width * height * 1/1000;
+
+                    var rock = selfSpace.addBody(new cp.Body(mass, cp.momentForBox(mass, width, height)));
+                     rock.setPos(cp.v(event._x, event._y));
+                     rock.setAngle(1);
+                     var shape = selfSpace.addShape(new cp.BoxShape(rock, width, height));
+                     shape.setFriction(0.3);
+                     shape.setElasticity(0.3);
                 }
             }, this);
         }
@@ -319,7 +325,7 @@ var HelloWorldLayer = cc.Layer.extend({
                 {
                     pt1.x = p0.x + j * dx;
                     pt1.y = ymid + ampl * Math.cos(da * j);
-                    this._borderVertices[this._nBorderVertices++] = pt1;
+                    this._borderVertices[this._nBorderVertices++] = cc.p(pt1.x, pt1.y);;
 
                     this._hillVertices[this._nHillVertices] = pt0.x;
                     this._hillVertices[this._nHillVertices + 1] = 0;
@@ -363,6 +369,8 @@ var HelloWorldLayer = cc.Layer.extend({
 
             this.prevFromKeyPointI = this._fromKeyPointI;
             this.prevToKeyPointI = this._toKeyPointI;
+
+            this.resetTerrain()
         }
     },
 
