@@ -228,21 +228,23 @@ var HelloWorldLayer = cc.Layer.extend({
         else if( 'mouse' in cc.sys.capabilities )
         {
             var selfSpace = this._space
+            var hero = this._hero
 
             cc.eventManager.addListener({
                 event: cc.EventListener.MOUSE,
                 onMouseDown: function (event)
                 {
-                    var width = 50;
-                    var height = 60;
-                    var mass = width * height * 1/1000;
-
-                    var rock = selfSpace.addBody(new cp.Body(mass, cp.momentForBox(mass, width, height)));
-                     rock.setPos(cp.v(event._x, event._y));
-                     rock.setAngle(1);
-                     var shape = selfSpace.addShape(new cp.BoxShape(rock, width, height));
-                     shape.setFriction(0.3);
-                     shape.setElasticity(0.3);
+                    hero.wake();
+                    //var width = 50;
+                    //var height = 60;
+                    //var mass = width * height * 1/1000;
+                    //
+                    //var rock = selfSpace.addBody(new cp.Body(mass, cp.momentForBox(mass, width, height)));
+                    // rock.setPos(cp.v(event._x, event._y));
+                    // rock.setAngle(1);
+                    // var shape = selfSpace.addShape(new cp.BoxShape(rock, width, height));
+                    // shape.setFriction(0.3);
+                    // shape.setElasticity(0.3);
                 }
             }, this);
         }

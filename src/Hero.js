@@ -1,5 +1,6 @@
 Hero = cc.Sprite.extend({
         _body: null,
+        _awake: false,
         //_space: null,
 
         ctor: function (spaceObj) {
@@ -20,8 +21,17 @@ Hero = cc.Sprite.extend({
         },
 
         update: function (dt) {
-            this.setPosition(this._body.getPos())
-            console.log("Hero 输出测试");
+            this.setPosition(this._body.getPos());
+            if (this._awake) {
+                var vel = this._body.getVel();
+                var angle = cc.pToAngle(vel);
+                this.setRotation(-1 * cc.radiansToDegress(angle));
+            }
+        },
+
+        wake: function() {
+            this._awake = true;
+            this._body.applyImpulse(cc.p(1, 2), this.getPosition())
         }
 })
 
