@@ -377,8 +377,10 @@ var HelloWorldLayer = cc.Layer.extend({
     },
 
     setOffsetX: function (newOffsetX) {
+        var winSize = cc.director.getWinSize();
+
         this._offsetX = newOffsetX;
-        this.setPosition(cc.p(-this._offsetX * this.getScale(), 0));
+        this.setPosition(cc.p(winSize.width / 8 - this._offsetX * this.getScale(), 0));
 
         this.resetHillVertices();
     },
@@ -475,12 +477,13 @@ var HelloWorldScene = cc.Scene.extend({
         this.scheduleUpdate();
     },
     update: function (dt) {
-        var PIXELS_PER_SECOND = 100;
-        this.offset += PIXELS_PER_SECOND * dt;
+        //var PIXELS_PER_SECOND = 100;
+        //this.offset += PIXELS_PER_SECOND * dt;
 
         this.helloWorldLayerNode._space.step(dt);
         this.helloWorldLayerNode._hero.update(dt);
-        //this.helloWorldLayerNode.setOffsetX(this.offset)
+        var offset = this.helloWorldLayerNode._hero.getPosition().x;
+        this.helloWorldLayerNode.setOffsetX(offset)
     },
     onEnter: function () {
         this._super();
