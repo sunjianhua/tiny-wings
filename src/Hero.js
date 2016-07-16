@@ -1,6 +1,9 @@
 Hero = cc.Sprite.extend({
         _body: null,
         _awake: false,
+        NUM_PREV_VELS: 5,
+        _prevVels: new Array(),
+        _nextVel: 0,
         //_space: null,
 
         ctor: function (spaceObj) {
@@ -10,7 +13,7 @@ Hero = cc.Sprite.extend({
 
         init: function (spaceObj) {
             var winSize = cc.director.getWinSize();
-            var radius = 40;
+            var radius = 20;
             mass = 3;
             this._body = spaceObj.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, cp.v(0, 0))));
             this._body.setPos(cp.v(0, winSize.height / 2 + radius));
@@ -19,13 +22,31 @@ Hero = cc.Sprite.extend({
             circle.setElasticity(0);
             //摩擦
             circle.setFriction(0);
+            //
+            for (var i = 0; i < this.NUM_PREV_VELS; ++i)
+            {
+                this._prevVels[i] = 0;
+            }
         },
 
         update: function (dt) {
             this.setPosition(this._body.getPos());
             if (this._awake) {
                 var vel = this._body.getVel();
-                var angle = cc.pToAngle(vel);
+
+                var weightedVel = cc.p(vel.x, vel.y);
+                for (var i = 0; i < this.NUM_PREV_VELS; ++i)
+                {
+                    weightedVel += this._prevVels[i];
+                }
+                weightedVel = cc.p(weightedVel.x / this.NUM_PREV_VELS, weightedVel.y / this.NUM_PREV_VELS);
+                this._prevVels[this._nextVel++] = vel;
+                if (this._nextVel >= this.NUM_PREV_VELS)
+                {
+                    this._nextVel = 0;
+                }
+
+                var angle = cc.pToAngle(weightedVel);
                 this.setRotation(-1 * cc.radiansToDegress(angle));
             }
         },
@@ -33,7 +54,35 @@ Hero = cc.Sprite.extend({
         wake: function() {
             this._awake = true;
             this._body.applyImpulse(cc.p(1, 2), this.getPosition())
-        }
+        },
+
+        getAwake: function() {
+            return this._awake;
+        },
+
+        dive: function() {
+            this._body.applyForce(cc.p(5, -50), this._body.getPos());
+        },
+
+        limitVelocity: function() {
+            if (!this._awake)
+            {
+                return;
+            }
+
+            var minVelocityX = 100;
+            var minVelocityY = -40;
+            var vel = this._body.getVel();
+            if (vel.x < minVelocityX)
+            {
+                vel.x = minVelocityX;
+            }
+            if (vel.y < minVelocityY)
+            {
+                vel.y = minVelocityY;
+            }
+            this._body.setVel(vel);
+        },
 })
 
 Hero.createWithSpace = function (spaceObj) {

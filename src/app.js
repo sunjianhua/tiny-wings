@@ -31,7 +31,7 @@ var HelloWorldLayer = cc.Layer.extend({
     _offsetX: 0,
     _fromKeyPointI: 0,
     _toKeyPointI: 0,
-    kHillSegmentWidth: 50,
+    kHillSegmentWidth: 10,
     M_PI: 3.14159265358979323846,
 
     prevFromKeyPointI: -1,
@@ -55,9 +55,14 @@ var HelloWorldLayer = cc.Layer.extend({
     //
     resetTerrain : function() {
         var space = this._space;
+        var shapeList = [];
         if(this.terrainBody)
         {
-            space.removeBody(this.terrainBody)
+            this.terrainBody.eachShape(function(shapeObj){ shapeList.push(shapeObj);  })
+            for(var i = 0, len = shapeList.length; i < len; i++)
+            {
+                space.removeStaticShape(shapeList[i]);
+            }
         }
 
         this.terrainBody = new cp.Body(Infinity, Infinity);
@@ -87,9 +92,9 @@ var HelloWorldLayer = cc.Layer.extend({
         this._space.sleepTimeThreshold = 0.5;
         this._space.collisionSlop = 0.5;
 
-        this._debugNode = new cc.PhysicsDebugNode(this._space);
+        //this._debugNode = new cc.PhysicsDebugNode(this._space);
         //this._debugNode.visible = false;
-        this.addChild(this._debugNode, 12);
+        //this.addChild(this._debugNode, 12);
 
         var width = 50;
         var height = 60;
@@ -234,7 +239,6 @@ var HelloWorldLayer = cc.Layer.extend({
                 event: cc.EventListener.MOUSE,
                 onMouseDown: function (event)
                 {
-                    hero.wake();
                     //var width = 50;
                     //var height = 60;
                     //var mass = width * height * 1/1000;
@@ -471,17 +475,45 @@ var HelloWorldLayer = cc.Layer.extend({
 var HelloWorldScene = cc.Scene.extend({
     helloWorldLayerNode: null,
     offset: 0,
+    _tapDown: false,
     ctor: function () {
         this._super();
         //this.setScale(0.6);
         this.scheduleUpdate();
     },
     update: function (dt) {
+        if (this._tapDown)
+        {
+            if (!this.helloWorldLayerNode._hero.getAwake())
+            {
+                this.helloWorldLayerNode._hero.wake();
+                this._tapDown = false;
+            }
+            else
+            {
+                this.helloWorldLayerNode._hero.dive();
+            }
+        }
+        else
+        {
+            // this.helloWorldLayerNode._hero.nodive();
+        }
+        this.helloWorldLayerNode._hero.limitVelocity();
+
         //var PIXELS_PER_SECOND = 100;
         //this.offset += PIXELS_PER_SECOND * dt;
 
         this.helloWorldLayerNode._space.step(dt);
         this.helloWorldLayerNode._hero.update(dt);
+
+        //var winSize = cc.director.getWinSize();
+        //var scale = (winSize.height * 3 / 4) / this.helloWorldLayerNode._hero.getPosition().y;
+        //if (scale > 1)
+        //{
+        //    scale = 1;
+        //}
+        //this.helloWorldLayerNode.setScale(scale);
+
         var offset = this.helloWorldLayerNode._hero.getPosition().x;
         this.helloWorldLayerNode.setOffsetX(offset)
     },
@@ -489,5 +521,31 @@ var HelloWorldScene = cc.Scene.extend({
         this._super();
         this.helloWorldLayerNode = new HelloWorldLayer();
         this.addChild(this.helloWorldLayerNode);
+
+        var helloWorld = this;
+
+        if( 'touches' in cc.sys.capabilities )
+        {
+            cc.eventManager.addListener({
+                event: cc.EventListener.TOUCH_ALL_AT_ONCE,
+                onTouchesEnded: function(touches, event)
+                {
+                    console.log("点了一下。")
+                }}, this);
+        }
+        else if( 'mouse' in cc.sys.capabilities )
+        {
+            cc.eventManager.addListener({
+                event: cc.EventListener.MOUSE,
+                onMouseDown: function (event)
+                {
+                    helloWorld._tapDown = true;
+                },
+                onMouseUp: function (event)
+                {
+                    helloWorld._tapDown = false;
+                }
+            }, this);
+        }
     }
 });
