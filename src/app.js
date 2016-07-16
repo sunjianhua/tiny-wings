@@ -166,13 +166,15 @@ var HelloWorldLayer = cc.Layer.extend({
 
             this.shader = cc.shaderCache.getProgram("ShaderPositionTexture");
             this.initBuffers();
-            cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POSITION | cc.VERTEX_ATTRIB_FLAG_TEX_COORDS);
 
             glnode.draw = function () {
                 this.shader.use();
                 this.shader.setUniformsForBuiltins();
 
+                cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POSITION | cc.VERTEX_ATTRIB_FLAG_TEX_COORDS);
+
                 this._texture2d.setTexParameters(gl.LINEAR, gl.LINEAR, gl.REPEAT, gl.REPEAT);
+
                 cc.glBindTexture2D(this._texture2d);
 
                 // 绘制山丘
