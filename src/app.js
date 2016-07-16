@@ -166,12 +166,13 @@ var HelloWorldLayer = cc.Layer.extend({
 
             this.shader = cc.shaderCache.getProgram("ShaderPositionTexture");
             this.initBuffers();
+            cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POSITION | cc.VERTEX_ATTRIB_FLAG_TEX_COORDS);
 
             glnode.draw = function () {
                 this.shader.use();
                 this.shader.setUniformsForBuiltins();
-                cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POSITION | cc.VERTEX_ATTRIB_FLAG_TEX_COORDS);
 
+                this._texture2d.setTexParameters(gl.LINEAR, gl.LINEAR, gl.REPEAT, gl.REPEAT);
                 cc.glBindTexture2D(this._texture2d);
 
                 // 绘制山丘
@@ -331,7 +332,7 @@ var HelloWorldLayer = cc.Layer.extend({
                 {
                     pt1.x = p0.x + j * dx;
                     pt1.y = ymid + ampl * Math.cos(da * j);
-                    this._borderVertices[this._nBorderVertices++] = cc.p(pt1.x, pt1.y);;
+                    this._borderVertices[this._nBorderVertices++] = cc.p(pt1.x, pt1.y);
 
                     this._hillVertices[this._nHillVertices] = pt0.x;
                     this._hillVertices[this._nHillVertices + 1] = 0;

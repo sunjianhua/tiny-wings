@@ -25,7 +25,7 @@ Hero = cc.Sprite.extend({
             //
             for (var i = 0; i < this.NUM_PREV_VELS; ++i)
             {
-                this._prevVels[i] = 0;
+                this._prevVels[i] = cc.p();
             }
         },
 
@@ -37,10 +37,11 @@ Hero = cc.Sprite.extend({
                 var weightedVel = cc.p(vel.x, vel.y);
                 for (var i = 0; i < this.NUM_PREV_VELS; ++i)
                 {
-                    weightedVel += this._prevVels[i];
+                    weightedVel.x += this._prevVels[i].x;
+                    weightedVel.y += this._prevVels[i].y;
                 }
                 weightedVel = cc.p(weightedVel.x / this.NUM_PREV_VELS, weightedVel.y / this.NUM_PREV_VELS);
-                this._prevVels[this._nextVel++] = vel;
+                this._prevVels[this._nextVel++] = cc.p(vel.x, vel.y);
                 if (this._nextVel >= this.NUM_PREV_VELS)
                 {
                     this._nextVel = 0;
