@@ -12,4 +12,25 @@
 一篇扩展文章
 [cocos2dx实现自定义2D地形](http://blog.csdn.net/z104207/article/details/44591865)
 
+##纲要
 
+这个文章相关的代码放在：xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+这个文章可以看做是对代码部分的整体说明，所以可以先下载代码，在看代码的时候，拿这个文章作为参考。
+
+因为有上面所列网址非常详细的翻译，这里只是把实现的一些步骤和功能点列出来。
+
+游戏引擎采用cocos2d-x js/jsb 3.11，开发阶段，因为主要是javascript的编写，貌似只要是个文本编辑器都可以，会用到的cocos2d-x 的命令
+
+| aaa | aaa | aaaa|
+| ...| ...| ...|
+|aaa| aaa| aaa|
+
+整体规划
+
+tiny-wings 主要实现小鸟在崎岖的山路上运行，所以需要：小鸟对象、山路对象，还有一个场景对象，用cocos2d-x 命令******生成的项目已经有场景了，所以再添加小鸟对象和山路对象就可以了，创建两个js文件，分别命名为bird.js和terrxxxx.js。
+
+##项目创建
+##山路的实现
+##小鸟的实现
+##总结
